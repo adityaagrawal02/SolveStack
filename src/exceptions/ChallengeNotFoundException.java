@@ -8,11 +8,6 @@ public class ChallengeNotFoundException extends SolveStackException {
 
     private final String challengeId;
 
-    public ChallengeNotFoundException(String challengeId) {
-        super("Challenge not found with ID: '" + challengeId + "'", "CHALLENGE_NOT_FOUND");
-        this.challengeId = challengeId;
-    }
-
     public ChallengeNotFoundException(String challengeId, String customMessage) {
         super(customMessage, "CHALLENGE_NOT_FOUND");
         this.challengeId = challengeId;

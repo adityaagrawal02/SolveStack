@@ -9,6 +9,7 @@ import java.time.format.DateTimeFormatter;
 
 /**
  * Centralized exception handler for SolveStack.
+ * In Phase 2 this would map to Spring's @ControllerAdvice / @ExceptionHandler.
  *
  * Responsibilities:
  *  - Log all exceptions with timestamps to the console.
@@ -29,20 +30,36 @@ public class GlobalExceptionHandler {
     // -------------------------------------------------------------------------
 
     /**
+     * Handles any SolveStack-specific exception and prints a formatted error.
+     *
+     * @param ex The exception to handle.
      * Logs the exception to the console without showing any UI dialog.
      * Use this in service/model layers where no UI is available.
      */
+    public static void handle(SolveStackException ex) {
+        System.out.println("============================================");
+        System.out.println("[SOLVESTACK ERROR] " + ex.getClass().getSimpleName());
+        System.out.println("  Message: " + ex.getMessage());
+        System.out.println("============================================");
     public static void handle(Exception e) {
         logToConsole(e);
     }
 
     /**
+     * Handles unexpected runtime exceptions.
      * Logs the exception AND shows a user-friendly dialog on screen.
      * Use this in UI layers (LoginUI, DashboardUI, etc.)
      *
+     * @param ex The exception to handle.
      * @param e       The exception that occurred.
      * @param parent  The parent Swing component for the dialog (can be null).
      */
+    public static void handle(Exception ex) {
+        System.out.println("============================================");
+        System.out.println("[UNEXPECTED ERROR] " + ex.getClass().getSimpleName());
+        System.out.println("  Message: " + ex.getMessage());
+        System.out.println("  Please contact the platform administrator.");
+        System.out.println("============================================");
     public static void handleAndShow(Exception e, java.awt.Component parent) {
         logToConsole(e);
         showDialog(e, parent);
