@@ -1,14 +1,7 @@
-/**File 5: UnauthorizedAccessException.java
-Thrown when a user tries to do something their role doesn't permit. */
-
 package exceptions;
 
-public class UnauthorizedAccessException extends RuntimeException {
-    public UnauthorizedAccessException(String message) {
-        super(message);
 /**
  * Thrown when a user attempts an action they are not authorized to perform.
- * Example: a Developer trying to approve a challenge (Admin-only action).
  */
 public class UnauthorizedAccessException extends SolveStackException {
 
@@ -30,16 +23,10 @@ public class UnauthorizedAccessException extends SolveStackException {
         this.attemptedAction = "UNKNOWN";
     }
 
-    /**
-     * Returns the role of the user who attempted the action.
-     */
     public String getUserRole() {
         return userRole;
     }
 
-    /**
-     * Returns the action that was attempted without permission.
-     */
     public String getAttemptedAction() {
         return attemptedAction;
     }

@@ -63,7 +63,7 @@ public class Developer extends User {
     // ─────────────────────────────────────────────────────────
 
     @Override
-    public String getRole() { return "models.Developer"; }
+    public String getRole() { return "Developer"; }
 
     @Override
     protected void displayRoleDashboard() {

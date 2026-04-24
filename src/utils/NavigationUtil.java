@@ -1,13 +1,12 @@
 package utils;
 
-import ui.LoginUI;
+import java.awt.*;
+import javax.swing.*;
 import ui.AdminDashboardUI;
 import ui.CompanyDashboardUI;
 import ui.DeveloperDashboardUI;
 import ui.EvaluatorDashboardUI;
-
-import javax.swing.*;
-import java.awt.*;
+import ui.LoginUI;
 
 public final class NavigationUtil {
 
@@ -68,7 +67,7 @@ public final class NavigationUtil {
 
             if (choice == JOptionPane.YES_OPTION) {
                 // Clear session
-                ui.UserSession.getInstance().clearSession();
+                ui.UserSession.getInstance().logout();
 
                 closeWindow(currentFrame);
                 new LoginUI().setVisible(true);

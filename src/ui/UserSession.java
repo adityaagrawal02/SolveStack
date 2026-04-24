@@ -29,7 +29,7 @@ public class UserSession {
      */
     public void setCurrentUser(User user, String role) {
         this.currentUser = user;
-        this.userRole = role;
+        this.userRole = DashboardRouter.normalizeRole(role);
     }
 
     /**
@@ -65,6 +65,7 @@ public class UserSession {
      * Checks if the current user has a specific role
      */
     public boolean hasRole(String role) {
-        return isLoggedIn() && userRole.equals(role);
+        return isLoggedIn() && userRole != null
+                && userRole.equalsIgnoreCase(DashboardRouter.normalizeRole(role));
     }
 }

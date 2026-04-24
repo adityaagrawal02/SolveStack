@@ -57,7 +57,7 @@ public class Evaluator extends User implements Evaluable {
     // ─────────────────────────────────────────────────────────
 
     @Override
-    public String getRole() { return "models.Evaluator"; }
+    public String getRole() { return "Evaluator"; }
 
     @Override
     protected void displayRoleDashboard() {

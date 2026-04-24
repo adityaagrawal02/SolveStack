@@ -1,10 +1,10 @@
 package ui;
 
-import javax.swing.*;
-import javax.swing.border.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.*;
+import javax.swing.*;
+import javax.swing.border.*;
 
 public class Components {
 
@@ -24,16 +24,17 @@ public class Components {
         l.setFont(Theme.FONT_SMALL);
         l.setForeground(fg);
         l.setOpaque(false);
-        l.setBorder(new EmptyBorder(4, 10, 4, 10));
+        l.setBorder(new EmptyBorder(5, 11, 5, 11));
         return l;
     }
 
     public static JLabel roleBadge(String role) {
-        return switch (role) {
-            case "Developer" -> badge(role, Theme.GREEN_BG,   Theme.GREEN_TEXT);
-            case "Evaluator" -> badge(role, Theme.AMBER_BG,   Theme.AMBER_TEXT);
-            case "Admin"     -> badge(role, Theme.CORAL_BG,   Theme.CORAL_TEXT);
-            default          -> badge(role, Theme.PRIMARY_LIGHT, Theme.PRIMARY);
+        String normalizedRole = DashboardRouter.normalizeRole(role);
+        return switch (normalizedRole) {
+            case "Developer" -> badge(normalizedRole, Theme.GREEN_BG,   Theme.GREEN_TEXT);
+            case "Evaluator" -> badge(normalizedRole, Theme.AMBER_BG,   Theme.AMBER_TEXT);
+            case "Admin"     -> badge(normalizedRole, Theme.CORAL_BG,   Theme.CORAL_TEXT);
+            default          -> badge(normalizedRole, Theme.PRIMARY_LIGHT, Theme.PRIMARY);
         };
     }
 
@@ -42,16 +43,19 @@ public class Components {
         return new JPanel() {
             { setPreferredSize(new Dimension(36, 36)); setOpaque(false); }
             @Override protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g;
+                Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(new Color(15, 23, 42, 22));
+                g2.fillOval(0, 2, 35, 35);
                 g2.setColor(bg);
                 g2.fillOval(0, 0, 35, 35);
                 g2.setColor(fg);
-                g2.setFont(new Font("Trebuchet MS", Font.BOLD, 11));
+                g2.setFont(Theme.FONT_SMALL.deriveFont(Font.BOLD));
                 FontMetrics fm = g2.getFontMetrics();
                 int x = (35 - fm.stringWidth(initials)) / 2;
                 int y = (35 + fm.getAscent() - fm.getDescent()) / 2;
                 g2.drawString(initials, x, y);
+                g2.dispose();
             }
         };
     }
@@ -60,70 +64,88 @@ public class Components {
     public static JButton primaryBtn(String text) {
         JButton b = new JButton(text) {
             @Override protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g;
+                Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(getModel().isPressed() ? Theme.PRIMARY_DARK
-                          : getModel().isRollover() ? new Color(18, 96, 95) : Theme.PRIMARY);
-                g2.fill(new RoundRectangle2D.Float(0, 1, getWidth(), getHeight() - 1, 10, 10));
+
+                Color fill = getModel().isPressed() ? Theme.PRIMARY_DARK
+                        : getModel().isRollover() ? Theme.PRIMARY.brighter() : Theme.PRIMARY;
+                g2.setColor(fill);
+                g2.fill(new RoundRectangle2D.Float(0, 0, getWidth(), getHeight(), 12, 12));
+
+                g2.setColor(new Color(255, 255, 255, 42));
+                g2.draw(new RoundRectangle2D.Float(0.5f, 0.5f, getWidth() - 1f, getHeight() - 1f, 12, 12));
+
                 g2.setColor(Color.WHITE);
                 g2.setFont(getFont());
                 FontMetrics fm = g2.getFontMetrics();
-                g2.drawString(getText(), (getWidth() - fm.stringWidth(getText())) / 2,
-                        (getHeight() + fm.getAscent() - fm.getDescent()) / 2);
+                int tx = (getWidth() - fm.stringWidth(getText())) / 2;
+                int ty = (getHeight() + fm.getAscent() - fm.getDescent()) / 2;
+                g2.drawString(getText(), tx, ty);
+                g2.dispose();
             }
         };
-        b.setFont(Theme.FONT_BODY);
+        b.setFont(Theme.FONT_BODY.deriveFont(Font.BOLD));
         b.setForeground(Color.WHITE);
-        b.setPreferredSize(new Dimension(140, 34));
-        b.setFocusPainted(false);
-        b.setBorderPainted(false);
-        b.setContentAreaFilled(false);
-        b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        b.setPreferredSize(new Dimension(160, 42));
+        styleButton(b);
         return b;
     }
 
     public static JButton outlineBtn(String text) {
         JButton b = new JButton(text) {
             @Override protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g;
+                Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
                 g2.setColor(getModel().isRollover() ? Theme.PRIMARY_LIGHT : Theme.BG_WHITE);
-                g2.fill(new RoundRectangle2D.Float(0, 0, getWidth() - 1, getHeight() - 1, 8, 8));
-                g2.setColor(Theme.BORDER);
-                g2.draw(new RoundRectangle2D.Float(0, 0, getWidth() - 1, getHeight() - 1, 8, 8));
+                g2.fill(new RoundRectangle2D.Float(0, 0, getWidth() - 1, getHeight() - 1, 10, 10));
+                g2.setColor(getModel().isRollover() ? Theme.PRIMARY : Theme.BORDER);
+                g2.draw(new RoundRectangle2D.Float(0.5f, 0.5f, getWidth() - 2f, getHeight() - 2f, 10, 10));
+
                 g2.setColor(Theme.TEXT_PRIMARY);
                 g2.setFont(getFont());
                 FontMetrics fm = g2.getFontMetrics();
-                g2.drawString(getText(), (getWidth() - fm.stringWidth(getText())) / 2,
-                        (getHeight() + fm.getAscent() - fm.getDescent()) / 2);
+                int tx = (getWidth() - fm.stringWidth(getText())) / 2;
+                int ty = (getHeight() + fm.getAscent() - fm.getDescent()) / 2;
+                g2.drawString(getText(), tx, ty);
+                g2.dispose();
             }
         };
         b.setFont(Theme.FONT_BODY);
-        b.setPreferredSize(new Dimension(120, 34));
-        b.setFocusPainted(false);
-        b.setBorderPainted(false);
-        b.setContentAreaFilled(false);
-        b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        b.setPreferredSize(new Dimension(120, 38));
+        styleButton(b);
         return b;
     }
 
     public static JButton smallBtn(String text) {
         JButton b = outlineBtn(text);
         b.setFont(Theme.FONT_SMALL);
-        b.setPreferredSize(new Dimension(90, 28));
+        b.setPreferredSize(new Dimension(96, 30));
         return b;
     }
 
     // ── Card panel ────────────────────────────────────────────────────────────
     public static JPanel card() {
-        JPanel p = new JPanel();
-        p.setBackground(Theme.BG_WHITE);
-        p.setBorder(new CompoundBorder(
-            new CompoundBorder(
-                new MatteBorder(0, 0, 2, 0, new Color(225, 228, 224)),
-                new LineBorder(Theme.BORDER, 1, true)
-            ),
-                new EmptyBorder(14, 16, 14, 16)));
+        JPanel p = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(new Color(15, 23, 42, 12));
+                g2.fillRoundRect(0, 2, getWidth() - 1, getHeight() - 2, 18, 18);
+
+                GradientPaint gp = new GradientPaint(0, 0, new Color(255, 255, 255, 245),
+                        0, getHeight(), new Color(248, 251, 255, 245));
+                g2.setPaint(gp);
+                g2.fillRoundRect(0, 0, getWidth() - 1, getHeight() - 3, 18, 18);
+
+                g2.setColor(Theme.BORDER);
+                g2.drawRoundRect(0, 0, getWidth() - 1, getHeight() - 3, 18, 18);
+                g2.dispose();
+            }
+        };
+        p.setOpaque(false);
+        p.setBorder(new EmptyBorder(22, 24, 22, 24));
         return p;
     }
 
@@ -132,7 +154,7 @@ public class Components {
         JPanel nav = new JPanel(new BorderLayout());
         nav.setBackground(Theme.BG_WHITE);
         nav.setBorder(new MatteBorder(0, 0, 1, 0, Theme.BORDER));
-        nav.setPreferredSize(new Dimension(0, 56));
+        nav.setPreferredSize(new Dimension(0, 64));
 
         // brand
         JPanel brand = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
@@ -158,12 +180,13 @@ public class Components {
         // right side
         JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 8));
         right.setOpaque(false);
-        right.add(roleBadge(role));
+        String normalizedRole = DashboardRouter.normalizeRole(role);
+        right.add(roleBadge(normalizedRole));
 
         String[] initials = {"Company", "Developer", "Evaluator", "Admin"};
-        String[][] avatarData = {{"AC", "#CFE9E7", "#0D5E5D"}, {"DV", "#BDE7D6", "#0D5E5D"},
-                      {"EV", "#FADAA4", "#8A520E"}, {"AD", "#F6D0C3", "#8D4425"}};
-        int idx = java.util.Arrays.asList(initials).indexOf(role);
+        String[][] avatarData = {{"AC", "#D8E6FA", "#134A84"}, {"DV", "#D1E3FC", "#124A84"},
+                  {"EV", "#FFE7C1", "#8D5A12"}, {"AD", "#F9D8CE", "#8F452A"}};
+        int idx = java.util.Arrays.asList(initials).indexOf(normalizedRole);
         if (idx < 0) idx = 0;
         Color avBg  = Color.decode(avatarData[idx][1]);
         Color avFg  = Color.decode(avatarData[idx][2]);
@@ -182,7 +205,7 @@ public class Components {
     public static JPanel metric(String label, String value) {
         JPanel p = new JPanel(new BorderLayout(0, 6));
         p.setBackground(Theme.BG_SECONDARY);
-        p.setBorder(new EmptyBorder(14, 14, 14, 14));
+        p.setBorder(new CompoundBorder(new LineBorder(Theme.BORDER, 1, true), new EmptyBorder(14, 14, 14, 14)));
 
         JLabel lbl = new JLabel(label);
         lbl.setFont(Theme.FONT_SMALL);
@@ -217,8 +240,8 @@ public class Components {
         JTextField f = new JTextField();
         f.setFont(Theme.FONT_BODY);
         f.setBorder(new CompoundBorder(
-                new LineBorder(Theme.BORDER, 1, true),
-                new EmptyBorder(6, 10, 6, 10)));
+                new RoundedBorder(12, Theme.BORDER),
+                new EmptyBorder(10, 14, 10, 14)));
         f.setForeground(Theme.TEXT_MUTED);
         f.setText(placeholder);
         f.addFocusListener(new FocusAdapter() {
@@ -238,8 +261,8 @@ public class Components {
         JPasswordField f = new JPasswordField();
         f.setFont(Theme.FONT_BODY);
         f.setBorder(new CompoundBorder(
-                new LineBorder(Theme.BORDER, 1, true),
-                new EmptyBorder(6, 10, 6, 10)));
+                new RoundedBorder(12, Theme.BORDER),
+                new EmptyBorder(10, 14, 10, 14)));
         return f;
     }
 
@@ -248,7 +271,7 @@ public class Components {
         a.setFont(Theme.FONT_BODY);
         a.setLineWrap(true);
         a.setWrapStyleWord(true);
-        a.setBorder(new EmptyBorder(6, 10, 6, 10));
+        a.setBorder(new EmptyBorder(10, 14, 10, 14));
         a.setForeground(Theme.TEXT_MUTED);
         a.setText(placeholder);
         a.addFocusListener(new FocusAdapter() {
@@ -280,7 +303,7 @@ public class Components {
         l.setBackground(Theme.PRIMARY_LIGHT);
         l.setOpaque(true);
         l.setBorder(new CompoundBorder(
-            new LineBorder(new Color(170, 218, 216), 1, true),
+            new LineBorder(Theme.BORDER, 1, true),
                 new EmptyBorder(10, 14, 10, 14)));
         return l;
     }
@@ -291,5 +314,43 @@ public class Components {
         sp.setBorder(BorderFactory.createEmptyBorder());
         sp.getVerticalScrollBar().setUnitIncrement(12);
         return sp;
+    }
+
+    private static void styleButton(JButton b) {
+        b.setFocusPainted(false);
+        b.setBorderPainted(false);
+        b.setContentAreaFilled(false);
+        b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        b.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseEntered(MouseEvent evt) {
+                b.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                b.repaint();
+            }
+
+            @Override
+            public void mouseExited(MouseEvent evt) {
+                b.repaint();
+            }
+        });
+    }
+
+    private static class RoundedBorder extends AbstractBorder {
+        private final int radius;
+        private final Color color;
+
+        RoundedBorder(int radius, Color color) {
+            this.radius = radius;
+            this.color = color;
+        }
+
+        @Override
+        public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+            Graphics2D g2 = (Graphics2D) g.create();
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setColor(color);
+            g2.drawRoundRect(x, y, width - 1, height - 1, radius, radius);
+            g2.dispose();
+        }
     }
 }
