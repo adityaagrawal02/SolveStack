@@ -8,6 +8,8 @@ public class DeveloperDashboardUI extends JFrame {
 
     private JPanel browsePanel;
     private JPanel minePanel;
+    private JPanel tabContent;
+    private CardLayout tabLayout;
     private JButton browseTab;
     private JButton mineTab;
 
@@ -37,7 +39,7 @@ public class DeveloperDashboardUI extends JFrame {
         JPanel body = new JPanel();
         body.setLayout(new BoxLayout(body, BoxLayout.Y_AXIS));
         body.setBackground(Theme.BG_LIGHT);
-        body.setBorder(new EmptyBorder(20, 20, 20, 20));
+        body.setBorder(new EmptyBorder(28, 28, 28, 28));
 
         // Title row
         JPanel titleRow = new JPanel(new BorderLayout());
@@ -98,7 +100,6 @@ public class DeveloperDashboardUI extends JFrame {
         minePanel = Components.card();
         minePanel.setLayout(new BoxLayout(minePanel, BoxLayout.Y_AXIS));
         minePanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 999));
-        minePanel.setVisible(false);
         Object[][] mySubmissions = {
             {"AK", "Carbon footprint tracker",     "ML-based solution",        "Under review", Theme.AMBER_BG, Theme.AMBER_TEXT, "#FAEEDA", "#854F0B"},
             {"AK", "Supply chain AI optimizer",    "Graph neural network approach","Accepted",  Theme.TEAL_BG,  Theme.TEAL_TEXT,  "#E1F5EE", "#0F6E56"},
@@ -116,14 +117,19 @@ public class DeveloperDashboardUI extends JFrame {
             if (i < mySubmissions.length - 1) minePanel.add(Components.sep());
         }
 
+        tabLayout = new CardLayout();
+        tabContent = new JPanel(tabLayout);
+        tabContent.setOpaque(false);
+        tabContent.add(browsePanel, "BROWSE");
+        tabContent.add(minePanel, "MINE");
+
         body.add(titleRow);
         body.add(Box.createVerticalStrut(16));
         body.add(metrics);
         body.add(Box.createVerticalStrut(16));
         body.add(tabBar);
         body.add(Box.createVerticalStrut(12));
-        body.add(browsePanel);
-        body.add(minePanel);
+        body.add(tabContent);
         body.add(Box.createVerticalGlue());
         return body;
     }
@@ -143,13 +149,13 @@ public class DeveloperDashboardUI extends JFrame {
     }
 
     private void switchTab(boolean browse) {
-        browsePanel.setVisible(browse);
-        minePanel.setVisible(!browse);
+        tabLayout.show(tabContent, browse ? "BROWSE" : "MINE");
         browseTab.setForeground(browse  ? Theme.PRIMARY : Theme.TEXT_MUTED);
         mineTab.setForeground(!browse ? Theme.PRIMARY : Theme.TEXT_MUTED);
         browseTab.setBorder(new CompoundBorder(new MatteBorder(0,0,browse  ? 2 : 0, 0, Theme.PRIMARY), new EmptyBorder(8,16,8,16)));
         mineTab.setBorder(new CompoundBorder(new MatteBorder(0,0,!browse ? 2 : 0, 0, Theme.PRIMARY), new EmptyBorder(8,16,8,16)));
-        revalidate();
+        tabContent.revalidate();
+        tabContent.repaint();
     }
 
     private JPanel challengeBrowseRow(String name, String company, String prize, String deadline) {

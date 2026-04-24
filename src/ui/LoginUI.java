@@ -32,10 +32,10 @@ public class LoginUI extends JFrame {
         card.setBackground(Theme.BG_WHITE);
         card.setBorder(new CompoundBorder(
             new CompoundBorder(
-                new MatteBorder(0, 0, 2, 0, new Color(225, 228, 224)),
+                new MatteBorder(0, 0, 2, 0, new Color(220, 226, 235)),
                 new LineBorder(Theme.BORDER, 1, true)
             ),
-            new EmptyBorder(30, 30, 30, 30)));
+            new EmptyBorder(32, 32, 32, 32)));
         card.setPreferredSize(new Dimension(380, 520));
 
         // Logo
@@ -52,7 +52,7 @@ public class LoginUI extends JFrame {
             }
         };
         JLabel logo = new JLabel("  SolveStack");
-        logo.setFont(new Font("Trebuchet MS", Font.BOLD, 21));
+        logo.setFont(Theme.FONT_HEAD.deriveFont(24f));
         logo.setForeground(Theme.TEXT_PRIMARY);
         logoRow.add(dot);
         logoRow.add(logo);
@@ -107,7 +107,7 @@ public class LoginUI extends JFrame {
 
         // Error message label
         JLabel errorMsg = new JLabel();
-        errorMsg.setFont(new Font("Trebuchet MS", Font.PLAIN, 12));
+        errorMsg.setFont(Theme.FONT_SMALL);
         errorMsg.setForeground(new Color(211, 47, 47));
         errorMsg.setAlignmentX(LEFT_ALIGNMENT);
         errorMsg.setVisible(false);
@@ -176,34 +176,35 @@ public class LoginUI extends JFrame {
         JPanel hero = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
-                super.paintComponent(g);
                 Graphics2D g2 = (Graphics2D) g.create();
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
                 GradientPaint gp = new GradientPaint(
-                        0, 0, new Color(19, 91, 90),
-                        getWidth(), getHeight(), new Color(34, 139, 136)
+                    0, 0, new Color(11, 28, 58),
+                    getWidth(), getHeight(), Theme.PRIMARY_DARK
                 );
                 g2.setPaint(gp);
                 g2.fillRect(0, 0, getWidth(), getHeight());
 
-                g2.setColor(new Color(255, 255, 255, 45));
-                g2.fillOval(getWidth() - 220, 70, 180, 180);
-                g2.setColor(new Color(255, 255, 255, 28));
-                g2.fillOval(30, getHeight() - 230, 210, 210);
+                g2.setColor(new Color(255, 255, 255, 36));
+                g2.fill(new java.awt.geom.Ellipse2D.Double(-110, -120, 420, 420));
+                g2.fill(new java.awt.geom.Ellipse2D.Double(getWidth() - 230, getHeight() - 220, 320, 320));
+
+                g2.setColor(new Color(255, 255, 255, 18));
+                g2.fillRoundRect(72, getHeight() - 190, getWidth() - 170, 94, 26, 26);
                 g2.dispose();
             }
         };
         hero.setLayout(new BoxLayout(hero, BoxLayout.Y_AXIS));
-        hero.setBorder(new EmptyBorder(80, 56, 80, 56));
+        hero.setBorder(new EmptyBorder(84, 64, 84, 64));
 
         JLabel title = new JLabel("Build solutions that matter.");
-        title.setFont(new Font("Trebuchet MS", Font.BOLD, 33));
+        title.setFont(Theme.FONT_TITLE.deriveFont(36f));
         title.setForeground(Color.WHITE);
         title.setAlignmentX(LEFT_ALIGNMENT);
 
         JLabel subtitle = new JLabel("<html>SolveStack connects companies and developers for real-world innovation challenges.</html>");
-        subtitle.setFont(new Font("Trebuchet MS", Font.PLAIN, 15));
+        subtitle.setFont(Theme.FONT_BODY.deriveFont(15f));
         subtitle.setForeground(new Color(235, 250, 248));
         subtitle.setAlignmentX(LEFT_ALIGNMENT);
 
@@ -234,10 +235,10 @@ public class LoginUI extends JFrame {
         ));
 
         JLabel v = new JLabel(value);
-        v.setFont(new Font("Trebuchet MS", Font.BOLD, 21));
+        v.setFont(Theme.FONT_HEAD.deriveFont(22f));
         v.setForeground(Color.WHITE);
         JLabel l = new JLabel(label);
-        l.setFont(new Font("Trebuchet MS", Font.PLAIN, 11));
+        l.setFont(Theme.FONT_SMALL);
         l.setForeground(new Color(235, 250, 248));
 
         p.add(v);
@@ -251,7 +252,7 @@ public class LoginUI extends JFrame {
             b.setBackground(Theme.PRIMARY_LIGHT);
             b.setForeground(Theme.PRIMARY);
             b.setBorder(new CompoundBorder(
-                    new LineBorder(new Color(170, 218, 216), 1, true),
+                    new LineBorder(Theme.PRIMARY, 1, true),
                     new EmptyBorder(6, 10, 6, 10)));
         } else {
             b.setBackground(Theme.BG_WHITE);
@@ -286,18 +287,22 @@ public class LoginUI extends JFrame {
         }
 
         // Store user session
-        String userRole = user.getRole();
+        String userRole = DashboardRouter.normalizeRole(user.getRole());
+        String selectedNormalizedRole = DashboardRouter.normalizeRole(selectedRole);
+        if (!selectedNormalizedRole.equalsIgnoreCase(userRole)) {
+            errorMsg.setText("⚠ This account belongs to " + userRole + ". Please select the correct role.");
+            errorMsg.setVisible(true);
+            return;
+        }
+
         UserSession.getInstance().setCurrentUser(user, userRole);
 
-        // Route to appropriate dashboard based on actual user role
-        JFrame dash = switch (userRole) {
-            case "Developer" -> new DeveloperDashboardUI();
-            case "Evaluator" -> new EvaluatorDashboardUI();
-            case "Admin"     -> new AdminDashboardUI();
-            case "Company"   -> new CompanyDashboardUI();
-            default          -> new CompanyDashboardUI();
-        };
-        dash.setVisible(true);
-        this.dispose();
+        // Route to dedicated dashboard per role.
+        try {
+            DashboardRouter.openDashboard(this, userRole);
+        } catch (IllegalArgumentException ex) {
+            errorMsg.setText("⚠ " + ex.getMessage());
+            errorMsg.setVisible(true);
+        }
     }
 }

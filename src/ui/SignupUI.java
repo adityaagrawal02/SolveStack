@@ -39,13 +39,13 @@ public class SignupUI extends JFrame {
             }
         };
         JLabel logo = new JLabel("  SolveStack");
-        logo.setFont(new Font("Trebuchet MS", Font.BOLD, 21));
+        logo.setFont(Theme.FONT_HEAD.deriveFont(24f));
         logo.setForeground(Theme.TEXT_PRIMARY);
         logoRow.add(dot);
         logoRow.add(logo);
 
         JLabel title = new JLabel("Create Account");
-        title.setFont(new Font("Trebuchet MS", Font.BOLD, 18));
+        title.setFont(Theme.FONT_HEAD.deriveFont(22f));
         title.setForeground(Theme.TEXT_PRIMARY);
         title.setAlignmentX(LEFT_ALIGNMENT);
 
@@ -60,12 +60,12 @@ public class SignupUI extends JFrame {
         roleLabel.setForeground(Theme.TEXT_MUTED);
         roleLabel.setAlignmentX(LEFT_ALIGNMENT);
 
-        String[] roles = {"Developer", "Company", "Evaluator"};
+        String[] roles = {"Developer", "Company", "Evaluator", "Admin"};
         roleBtns = new JButton[roles.length];
-        JPanel roleGrid = new JPanel(new GridLayout(1, 3, 8, 0));
+        JPanel roleGrid = new JPanel(new GridLayout(2, 2, 8, 8));
         roleGrid.setOpaque(false);
         roleGrid.setAlignmentX(LEFT_ALIGNMENT);
-        roleGrid.setMaximumSize(new Dimension(Integer.MAX_VALUE, 40));
+        roleGrid.setMaximumSize(new Dimension(Integer.MAX_VALUE, 78));
 
         for (int i = 0; i < roles.length; i++) {
             final String r = roles[i];
@@ -111,7 +111,7 @@ public class SignupUI extends JFrame {
 
         // Error message
         JLabel errorMsg = new JLabel();
-        errorMsg.setFont(new Font("Trebuchet MS", Font.PLAIN, 12));
+        errorMsg.setFont(Theme.FONT_SMALL);
         errorMsg.setForeground(new Color(211, 47, 47));
         errorMsg.setAlignmentX(LEFT_ALIGNMENT);
         errorMsg.setVisible(false);
@@ -214,6 +214,16 @@ public class SignupUI extends JFrame {
             dynamicFieldsPanel.add(expertiseLabel);
             dynamicFieldsPanel.add(Box.createVerticalStrut(4));
             dynamicFieldsPanel.add(expertiseField);
+        } else if ("Admin".equals(selectedRole)) {
+            JLabel levelLabel = Components.formLabel("Admin Access Level");
+            levelLabel.setAlignmentX(LEFT_ALIGNMENT);
+            JTextField levelField = Components.textField("e.g. SUPER_ADMIN");
+            levelField.setAlignmentX(LEFT_ALIGNMENT);
+            levelField.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+            levelField.setName("adminLevel");
+            dynamicFieldsPanel.add(levelLabel);
+            dynamicFieldsPanel.add(Box.createVerticalStrut(4));
+            dynamicFieldsPanel.add(levelField);
         }
         dynamicFieldsPanel.revalidate();
         dynamicFieldsPanel.repaint();
@@ -290,7 +300,7 @@ public class SignupUI extends JFrame {
             b.setBackground(Theme.PRIMARY_LIGHT);
             b.setForeground(Theme.PRIMARY);
             b.setBorder(new CompoundBorder(
-                    new LineBorder(new Color(170, 218, 216), 1, true),
+                    new LineBorder(Theme.PRIMARY, 1, true),
                     new EmptyBorder(6, 10, 6, 10)));
         } else {
             b.setBackground(Theme.BG_WHITE);

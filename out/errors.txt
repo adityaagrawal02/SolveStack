@@ -1,0 +1,4 @@
+C:\Users\DESHNA\SolveStack\src\exceptions\GlobalExceptionHandler.java:44: error: illegal start of expression
+C:\Users\DESHNA\SolveStack\src\exceptions\GlobalExceptionHandler.java:63: error: illegal start of expression
+C:\Users\DESHNA\SolveStack\src\exceptions\UnauthorizedAccessException.java:13: error: illegal start of expression
+C:\Users\DESHNA\SolveStack\src\exceptions\UnauthorizedAccessException.java:46: error: reached end of file while parsing

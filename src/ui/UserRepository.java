@@ -110,6 +110,9 @@ public class UserRepository {
                 case "Evaluator":
                     newUser = new Evaluator(userId, username, email, password, dynamicValue);
                     break;
+                case "Admin":
+                    newUser = new Admin(userId, username, email, password, dynamicValue);
+                    break;
             }
 
             if (newUser != null) {

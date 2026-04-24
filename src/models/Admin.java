@@ -57,7 +57,7 @@ public class Admin extends User {
     // ─────────────────────────────────────────────────────────
 
     @Override
-    public String getRole() { return "models.Admin"; }
+    public String getRole() { return "Admin"; }
 
     @Override
     protected void displayRoleDashboard() {
