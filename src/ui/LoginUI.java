@@ -36,25 +36,14 @@ public class LoginUI extends JFrame {
                 new LineBorder(Theme.BORDER, 1, true)
             ),
             new EmptyBorder(32, 32, 32, 32)));
-        card.setPreferredSize(new Dimension(380, 520));
+        card.setPreferredSize(new Dimension(380, 540));
 
         // Logo
         JPanel logoRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         logoRow.setOpaque(false);
         logoRow.setAlignmentX(LEFT_ALIGNMENT);
-        JPanel dot = new JPanel() {
-            { setPreferredSize(new Dimension(12, 12)); setOpaque(false); }
-            @Override protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g;
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(Theme.PRIMARY);
-                g2.fillOval(0, 2, 10, 10);
-            }
-        };
-        JLabel logo = new JLabel("  SolveStack");
-        logo.setFont(Theme.FONT_HEAD.deriveFont(24f));
-        logo.setForeground(Theme.TEXT_PRIMARY);
-        logoRow.add(dot);
+        logoRow.setMaximumSize(new Dimension(Integer.MAX_VALUE, 80));
+        LogoPanel logo = new LogoPanel(false, 24f);
         logoRow.add(logo);
 
         JLabel sub = new JLabel("Open innovation collaboration platform");
