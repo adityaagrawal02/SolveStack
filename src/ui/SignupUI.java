@@ -26,23 +26,18 @@ public class SignupUI extends JFrame {
         root.setBorder(new EmptyBorder(30, 30, 30, 30));
 
         // Logo
-        JPanel logoRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        JPanel logoRow = new JPanel();
+        logoRow.setLayout(new BoxLayout(logoRow, BoxLayout.Y_AXIS));
         logoRow.setOpaque(false);
         logoRow.setAlignmentX(LEFT_ALIGNMENT);
-        JPanel dot = new JPanel() {
-            { setPreferredSize(new Dimension(12, 12)); setOpaque(false); }
-            @Override protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g;
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(Theme.PRIMARY);
-                g2.fillOval(0, 2, 10, 10);
-            }
-        };
-        JLabel logo = new JLabel("  SolveStack");
-        logo.setFont(Theme.FONT_HEAD.deriveFont(24f));
-        logo.setForeground(Theme.TEXT_PRIMARY);
-        logoRow.add(dot);
+        logoRow.setMaximumSize(new Dimension(Integer.MAX_VALUE, 80));
+        LogoPanel logo = new LogoPanel(false, 24f);
         logoRow.add(logo);
+        JLabel tagline = new JLabel("  Open Innovation Collaboration Platform");
+        tagline.setFont(Theme.FONT_SMALL);
+        tagline.setForeground(Theme.TEXT_MUTED);
+        tagline.setAlignmentX(LEFT_ALIGNMENT);
+        logoRow.add(tagline);
 
         JLabel title = new JLabel("Create Account");
         title.setFont(Theme.FONT_HEAD.deriveFont(22f));

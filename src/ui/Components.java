@@ -160,23 +160,12 @@ public class Components {
         JPanel brand = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         brand.setOpaque(false);
         brand.setBorder(new EmptyBorder(0, 16, 0, 0));
-        JPanel dot = new JPanel() {
-            { setPreferredSize(new Dimension(10, 10)); setOpaque(false); }
-            @Override protected void paintComponent(Graphics g) {
-                Graphics2D g2 = (Graphics2D) g;
-                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                g2.setColor(Theme.PRIMARY_DARK);
-                g2.fillOval(1, 3, 7, 7);
-                g2.setColor(Theme.PRIMARY);
-                g2.fillOval(4, 0, 7, 7);
-            }
-        };
-        JLabel title = new JLabel("  SolveStack");
-        title.setFont(Theme.FONT_HEAD);
-        title.setForeground(Theme.TEXT_PRIMARY);
-        brand.add(dot);
-        brand.add(title);
-
+        LogoPanel logo = new LogoPanel(false, 18f);
+        brand.add(logo);
+        JLabel tagline = new JLabel("  Open Innovation Collaboration Platform");
+        tagline.setFont(Theme.FONT_SMALL);
+        tagline.setForeground(Theme.TEXT_MUTED);
+        brand.add(tagline);
         // right side
         JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 8));
         right.setOpaque(false);
