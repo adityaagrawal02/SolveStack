@@ -2,19 +2,53 @@ package db;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.Properties;
 
-public class DBConnection {
+public final class DBConnection {
 
-    public static Connection getConnection() {
+    private static final String URL =
+            "jdbc:mysql://localhost:3306/solvestack"
+                    + "?useSSL=false"
+                    + "&serverTimezone=UTC"
+                    + "&allowPublicKeyRetrieval=true";
+
+    private static final String USERNAME = "root";
+    private static final String PASSWORD = "Atherva@123";
+
+    static {
         try {
-            return DriverManager.getConnection(
-                    "jdbc:mysql://localhost:3306/solvestack",
-                    "root",
-                    "Atherva@123"
+            Class.forName("com.mysql.cj.jdbc.Driver");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(
+                    "MySQL JDBC Driver not found. Check project dependencies.",
+                    e
             );
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+        }
+    }
+
+    private DBConnection() {
+        // Prevent object creation
+    }
+
+    public static Connection getConnection() throws SQLException {
+
+        Properties props = new Properties();
+        props.setProperty("user", USERNAME);
+        props.setProperty("password", PASSWORD);
+        props.setProperty("useUnicode", "true");
+        props.setProperty("characterEncoding", "UTF-8");
+
+        return DriverManager.getConnection(URL, props);
+    }
+
+    public static void close(Connection con) {
+        if (con != null) {
+            try {
+                con.close();
+            } catch (SQLException e) {
+                System.err.println("Failed to close connection: " + e.getMessage());
+            }
         }
     }
 }
