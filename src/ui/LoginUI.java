@@ -29,7 +29,6 @@ import javafx.util.Duration;
 
 public class LoginUI {
 
-    private String selectedRole = "Admin";
     private Stage stage;
 
     public void show(Stage stage) {
@@ -146,25 +145,6 @@ public class LoginUI {
         sub.getStyleClass().add("auth-sub");
         VBox.setMargin(sub, new Insets(0, 0, 10, 0));
 
-        // Role Selection
-        Label roleLabel = new Label("Sign in as");
-        roleLabel.getStyleClass().add("field-label");
-
-        HBox roleBox = new HBox(12);
-        ToggleGroup group = new ToggleGroup();
-        String[] roles = { "Company", "Developer", "Evaluator", "Admin" };
-        for (String r : roles) {
-            ToggleButton tb = new ToggleButton(r);
-            tb.getStyleClass().add("role-chip");
-            tb.setToggleGroup(group);
-            if (r.equals(selectedRole))
-                tb.setSelected(true);
-            roleBox.getChildren().add(tb);
-        }
-        group.selectedToggleProperty().addListener((obs, old, nv) -> {
-            if (nv instanceof ToggleButton tb)
-                selectedRole = tb.getText();
-        });
 
         // Username
         Label userLabel = new Label("Username");
@@ -223,7 +203,6 @@ public class LoginUI {
 
         card.getChildren().addAll(
                 welcome, title, sub,
-                roleLabel, roleBox,
                 userLabel, userInput,
                 passLabel, passInput,
                 controls, errorMsg,
@@ -290,11 +269,6 @@ public class LoginUI {
         user.login(p);
 
         String userRole = DashboardRouter.normalizeRole(user.getRole());
-        String selRole = DashboardRouter.normalizeRole(selectedRole);
-        if (!selRole.equalsIgnoreCase(userRole)) {
-            showError(errorMsg, "Role mismatch (Account: " + userRole + ")");
-            return;
-        }
 
         UserSession.getInstance().setCurrentUser(user, userRole);
         DashboardRouter.openDashboard(stage, userRole);
