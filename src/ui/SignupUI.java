@@ -329,23 +329,38 @@ public class SignupUI {
                               TextField secA,
                               Label err) {
 
-        String username = trim(u.getText());
-        String email = trim(e.getText());
-        String password = trim(p.getText());
-        String q = trim(secQ.getText());
-        String a = trim(secA.getText());
-
-        if (username.isBlank() ||
-                email.isBlank() ||
-                password.isBlank()) {
-
-            showError(err, "All required fields must be filled.");
-            return;
-        }
-
-        boolean success = false;
-
         try {
+
+            String username = trim(u.getText());
+            String email = trim(e.getText());
+            String password = trim(p.getText());
+            String q = trim(secQ.getText());
+            String a = trim(secA.getText());
+
+            if (username.isBlank() ||
+                    email.isBlank() ||
+                    password.isBlank()) {
+
+                throw new exceptions.SolveStackException(
+                        "All required fields must be filled."
+                );
+            }
+
+            if (!email.contains("@")) {
+
+                throw new exceptions.SolveStackException(
+                        "Invalid email address."
+                );
+            }
+
+            if (password.length() < 6) {
+
+                throw new exceptions.SolveStackException(
+                        "Password must be at least 6 characters."
+                );
+            }
+
+            boolean success;
 
             if ("Company".equals(selectedRole)) {
 
@@ -376,23 +391,42 @@ public class SignupUI {
                                 );
             }
 
-        } catch (Exception ex) {
+            if (!success) {
+
+                throw new exceptions.SolveStackException(
+                        "Registration failed. Username may already exist."
+                );
+            }
+
+            Alert alert =
+                    new Alert(Alert.AlertType.INFORMATION);
+
+            alert.setHeaderText(
+                    "Account Created Successfully"
+            );
+
+            alert.setContentText(
+                    "You may now sign in."
+            );
+
+            alert.showAndWait();
+
+            new LoginUI().show(stage);
+
+        }
+
+        catch (exceptions.SolveStackException ex) {
+
             ex.printStackTrace();
-            showError(err, "Database error occurred.");
-            return;
+            showError(err, ex.getMessage());
         }
 
-        if (!success) {
-            showError(err, "Registration failed. Username may already exist.");
-            return;
+        catch (Exception ex) {
+
+            ex.printStackTrace();
+            showError(err,
+                    "Unexpected database error.");
         }
-
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setHeaderText("Account Created Successfully");
-        alert.setContentText("You may now sign in.");
-        alert.showAndWait();
-
-        new LoginUI().show(stage);
     }
 
     private void showError(Label err, String msg) {

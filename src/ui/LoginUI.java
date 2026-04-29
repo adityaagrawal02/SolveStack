@@ -1,5 +1,6 @@
 package ui;
 
+import exceptions.UserNotFoundException;
 import javafx.animation.Animation;
 import javafx.animation.Interpolator;
 import javafx.animation.KeyFrame;
@@ -269,9 +270,17 @@ public class LoginUI {
         return box;
     }
 
-    private void authenticate(TextField userField, PasswordField passField, Label errorMsg) {
-        String u = userField.getText() == null ? "" : userField.getText().trim();
-        String p = passField.getText() == null ? "" : passField.getText();
+    private void authenticate(TextField userField,
+                              PasswordField passField,
+                              Label errorMsg) {
+
+        String u = userField.getText() == null
+                ? ""
+                : userField.getText().trim();
+
+        String p = passField.getText() == null
+                ? ""
+                : passField.getText();
 
         if (u.isBlank() || p.isBlank()) {
             showError(errorMsg, "All fields required.");
@@ -279,25 +288,39 @@ public class LoginUI {
         }
 
         try {
-            models.User user = UserRepository.getInstance().authenticate(u, p);
+
+            models.User user =
+                    UserRepository.getInstance()
+                            .authenticate(u, p);
 
             if (user == null) {
-                showError(errorMsg, "Invalid username or password.");
-                return;
+                throw new UserNotFoundException(u);
             }
 
             user.login(p);
 
-            String userRole =
-                    DashboardRouter.normalizeRole(user.getRole());
+            String role =
+                    DashboardRouter.normalizeRole(
+                            user.getRole()
+                    );
 
             UserSession.getInstance()
-                    .setCurrentUser(user, userRole);
+                    .setCurrentUser(user, role);
 
-            DashboardRouter.openDashboard(stage, userRole);
+            DashboardRouter.openDashboard(stage, role);
 
-        } catch (Exception ex) {
-            showError(errorMsg, "Database connection failed.");
+        }
+
+        catch (exceptions.UserNotFoundException ex) {
+            showError(errorMsg, ex.getMessage());
+        }
+
+        catch (exceptions.SolveStackException ex) {
+            showError(errorMsg, ex.getMessage());
+        }
+
+        catch (Exception ex) {
+            showError(errorMsg, "Unexpected error occurred.");
             ex.printStackTrace();
         }
     }

@@ -2,7 +2,8 @@ package ui;
 
 import db.DBConnection;
 import models.*;
-
+import exceptions.SolveStackException;
+import exceptions.UserNotFoundException;
 import java.sql.*;
 import java.util.UUID;
 
@@ -31,7 +32,11 @@ public class UserRepository {
 
         if (username == null || password == null ||
                 username.isBlank() || password.isBlank()) {
-            return null;
+
+            throw new SolveStackException(
+                    "Username and password are required.",
+                    "VALIDATION_ERROR"
+            );
         }
 
         String sql =
@@ -45,39 +50,63 @@ public class UserRepository {
 
             ResultSet rs = ps.executeQuery();
 
-            if (rs.next()) {
-
-                String dbPassword = rs.getString("password_hash");
-
-                if (!dbPassword.equals(password)) {
-                    return null;
-                }
-
-                String userId = rs.getString("user_id");
-                String email = rs.getString("email");
-                String role = rs.getString("role");
-
-                switch (role.toUpperCase()) {
-
-                    case "COMPANY":
-                        return loadCompany(con, userId, username, email, password);
-
-                    case "DEVELOPER":
-                        return loadDeveloper(con, userId, username, email, password);
-
-                    case "EVALUATOR":
-                        return loadEvaluator(con, userId, username, email, password);
-
-                    case "ADMIN":
-                        return loadAdmin(con, userId, username, email, password);
-                }
+            if (!rs.next()) {
+                throw new UserNotFoundException(username);
             }
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+            String dbPassword =
+                    rs.getString("password_hash");
 
-        return null;
+            if (!dbPassword.equals(password)) {
+                throw new UserNotFoundException(username,
+                        "Invalid username or password.");
+            }
+
+            String userId =
+                    rs.getString("user_id");
+
+            String email =
+                    rs.getString("email");
+
+            String role =
+                    rs.getString("role");
+
+            return switch (role.toUpperCase()) {
+
+                case "COMPANY" ->
+                        loadCompany(con, userId,
+                                username, email, password);
+
+                case "DEVELOPER" ->
+                        loadDeveloper(con, userId,
+                                username, email, password);
+
+                case "EVALUATOR" ->
+                        loadEvaluator(con, userId,
+                                username, email, password);
+
+                case "ADMIN" ->
+                        loadAdmin(con, userId,
+                                username, email, password);
+
+                default ->
+                        throw new SolveStackException(
+                                "Unknown role found in database.",
+                                "ROLE_ERROR"
+                        );
+            };
+
+        } catch (SolveStackException ex) {
+            throw ex;
+
+        } catch (Exception ex) {
+
+            throw new SolveStackException(
+                    "Login failed due to database error.",
+                    "DB_ERROR",
+                    ex
+            );
+        }
     }
 
     /* =====================================================
@@ -116,6 +145,16 @@ public class UserRepository {
                                 String securityQuestion,
                                 String securityAnswer) {
 
+        if (username == null || username.isBlank() ||
+                email == null || email.isBlank() ||
+                password == null || password.isBlank()) {
+
+            throw new SolveStackException(
+                    "All required fields must be filled.",
+                    "VALIDATION_ERROR"
+            );
+        }
+
         String userId = generateId(role);
 
         try (Connection con = DBConnection.getConnection()) {
@@ -126,7 +165,8 @@ public class UserRepository {
                     "INSERT INTO users(user_id,username,email,password_hash,role) " +
                             "VALUES(?,?,?,?,?)";
 
-            PreparedStatement ps = con.prepareStatement(sql);
+            PreparedStatement ps =
+                    con.prepareStatement(sql);
 
             ps.setString(1, userId);
             ps.setString(2, username);
@@ -138,24 +178,34 @@ public class UserRepository {
 
             switch (role.toUpperCase()) {
 
-                case "DEVELOPER":
-                    insertDeveloper(con, userId, dynamicValue);
-                    break;
+                case "DEVELOPER" ->
+                        insertDeveloper(con, userId, dynamicValue);
 
-                case "EVALUATOR":
-                    insertEvaluator(con, userId, dynamicValue);
-                    break;
+                case "EVALUATOR" ->
+                        insertEvaluator(con, userId, dynamicValue);
 
-                case "ADMIN":
-                    insertAdmin(con, userId, dynamicValue);
-                    break;
+                case "ADMIN" ->
+                        insertAdmin(con, userId, dynamicValue);
             }
 
             con.commit();
             return true;
 
-        } catch (Exception e) {
-            return false;
+        } catch (SQLIntegrityConstraintViolationException ex) {
+
+            throw new SolveStackException(
+                    "Username or email already exists.",
+                    "DUPLICATE_USER",
+                    ex
+            );
+
+        } catch (Exception ex) {
+
+            throw new SolveStackException(
+                    "Registration failed.",
+                    "DB_ERROR",
+                    ex
+            );
         }
     }
 
@@ -429,35 +479,64 @@ public class UserRepository {
             ps.setString(2, newEmail);
             ps.setString(3, oldUsername);
 
-            return ps.executeUpdate() > 0;
+            int rows =
+                    ps.executeUpdate();
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
+            if (rows == 0) {
+                throw new UserNotFoundException(
+                        oldUsername
+                );
+            }
+
+            return true;
+
+        } catch (SolveStackException ex) {
+            throw ex;
+
+        } catch (Exception ex) {
+
+            throw new SolveStackException(
+                    "Profile update failed.",
+                    "DB_ERROR",
+                    ex
+            );
         }
     }
 
     public boolean deleteUser(String userId) {
 
         String sql =
-                "DELETE FROM users WHERE user_id = ?";
+                "DELETE FROM users WHERE user_id=?";
 
-        try (
-                java.sql.Connection con =
-                        db.DBConnection.getConnection();
+        try (Connection con =
+                     DBConnection.getConnection();
 
-                java.sql.PreparedStatement ps =
-                        con.prepareStatement(sql)
-        ) {
+             PreparedStatement ps =
+                     con.prepareStatement(sql)) {
 
             ps.setString(1, userId);
 
-            return ps.executeUpdate() > 0;
+            int rows =
+                    ps.executeUpdate();
 
-        } catch (Exception e) {
+            if (rows == 0) {
+                throw new UserNotFoundException(
+                        userId
+                );
+            }
 
-            e.printStackTrace();
-            return false;
+            return true;
+
+        } catch (SolveStackException ex) {
+            throw ex;
+
+        } catch (Exception ex) {
+
+            throw new SolveStackException(
+                    "Delete account failed.",
+                    "DB_ERROR",
+                    ex
+            );
         }
     }
 }

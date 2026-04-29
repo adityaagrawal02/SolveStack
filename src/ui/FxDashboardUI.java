@@ -558,25 +558,43 @@ public final class FxDashboardUI {
                         "Save Changes",
                         () -> {
 
-                            boolean ok =
-                                    UserRepository
-                                            .getInstance()
-                                            .updateUserProfile(
-                                                    currentUser.getUsername(),
-                                                    usernameField.getText(),
-                                                    emailField.getText(),
-                                                    bioField.getText()
-                                            );
+                            try {
 
-                            if (ok) {
+                                UserRepository
+                                        .getInstance()
+                                        .updateUserProfile(
+                                                currentUser.getUsername(),
+                                                usernameField.getText(),
+                                                emailField.getText(),
+                                                bioField.getText()
+                                        );
+
                                 FxComponents.showInfo(
                                         "Updated",
                                         "Profile updated successfully."
                                 );
-                            } else {
+
+                            } catch (exceptions.UserNotFoundException ex) {
+
                                 FxComponents.showError(
-                                        "Failed",
-                                        "Could not update profile."
+                                        "Update Failed",
+                                        ex.getMessage()
+                                );
+
+                            } catch (exceptions.SolveStackException ex) {
+
+                                FxComponents.showError(
+                                        "Update Failed",
+                                        ex.getMessage()
+                                );
+
+                            } catch (Exception ex) {
+
+                                ex.printStackTrace();
+
+                                FxComponents.showError(
+                                        "Error",
+                                        "Unexpected problem occurred."
                                 );
                             }
                         }
@@ -587,14 +605,13 @@ public final class FxDashboardUI {
                         "Delete Account",
                         () -> {
 
-                            boolean ok =
-                                    UserRepository
-                                            .getInstance()
-                                            .deleteUser(
-                                                    currentUser.getUserId()
-                                            );
+                            try {
 
-                            if (ok) {
+                                UserRepository
+                                        .getInstance()
+                                        .deleteUser(
+                                                currentUser.getUserId()
+                                        );
 
                                 FxComponents.showInfo(
                                         "Deleted",
@@ -607,11 +624,27 @@ public final class FxDashboardUI {
 
                                 new LoginUI().setVisible(true);
 
-                            } else {
+                            } catch (exceptions.UserNotFoundException ex) {
 
                                 FxComponents.showError(
-                                        "Failed",
-                                        "Could not delete account."
+                                        "Delete Failed",
+                                        ex.getMessage()
+                                );
+
+                            } catch (exceptions.SolveStackException ex) {
+
+                                FxComponents.showError(
+                                        "Delete Failed",
+                                        ex.getMessage()
+                                );
+
+                            } catch (Exception ex) {
+
+                                ex.printStackTrace();
+
+                                FxComponents.showError(
+                                        "Error",
+                                        "Unexpected problem occurred."
                                 );
                             }
                         }
