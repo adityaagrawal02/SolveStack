@@ -143,32 +143,83 @@ public class ChallengeRepository {
 
             try {
 
-                /*
-                 row indexes:
-
-                 0 submission_id
-                 1 challenge_id
-                 2 developer_id
-                 3 solution_summary
-                 4 status
-                 5 score
-                */
+            /*
+             row indexes:
+             0 submission_id
+             1 challenge_id
+             2 developer_id
+             3 solution_summary
+             4 status
+             5 score
+             6 submitted_at
+            */
 
                 Submission s =
                         new Submission(
-                                row[0],
-                                null,
-                                null,
-                                row[3]
+                                row[0],   // submission id
+                                row[2],   // developer username/id
+                                row[1],   // challenge id
+                                row[3]    // solution summary
                         );
 
                 list.add(s);
 
-            } catch (Exception ignored) {
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
 
         return list;
+    }
+
+    public List<Submission> getSubmissionsByDeveloper(
+            String developerId) {
+
+        List<Submission> list =
+                new ArrayList<>();
+
+        List<String[]> rows =
+                submissionDAO.getSubmissionsByDeveloper(
+                        developerId
+                );
+
+        for (String[] row : rows) {
+
+            try {
+
+            /*
+             DAO returns:
+             0 submission_id
+             1 challenge_id
+             2 solution_summary
+             3 status
+             4 score
+            */
+
+                Submission s =
+                        new Submission(
+                                row[0],
+                                developerId,
+                                row[1],
+                                row[2]
+                        );
+
+                list.add(s);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        return list;
+    }
+
+    public int getSubmissionCountByDeveloper(
+            String developerId) {
+
+        return getSubmissionsByDeveloper(
+                developerId
+        ).size();
     }
 
     /* ==========================================

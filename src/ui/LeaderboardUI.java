@@ -213,43 +213,35 @@ public class LeaderboardUI extends FxModalWindow {
                 new ArrayList<>();
 
         List<String[]> rows =
-                submissionDAO
-                        .getAllSubmissions();
+                submissionDAO.getAllSubmissions();
 
-        /*
-         DAO row:
-         0 submission_id
-         1 challenge_id
-         2 developer_id
-         3 status
-         4 score
-         5 submitted_at
-        */
+    /*
+     Actual DAO row:
+     0 submission_id
+     1 challenge_id
+     2 developer_id
+     3 solution_summary
+     4 status
+     5 score
+     6 submitted_at
+    */
 
-        rows.sort((a, b) -> {
-
-            double s1 =
-                    parseScore(a[4]);
-
-            double s2 =
-                    parseScore(b[4]);
-
-            return Double.compare(
-                    s2,
-                    s1
-            );
-        });
+        rows.sort((a, b) ->
+                Double.compare(
+                        parseScore(b[5]),
+                        parseScore(a[5])
+                )
+        );
 
         int rank = 1;
 
         for (String[] row : rows) {
 
             double score =
-                    parseScore(row[4]);
+                    parseScore(row[5]);
 
-            if (score <= 0) {
+            if (score <= 0)
                 continue;
-            }
 
             String rankClass =
                     switch (rank) {
@@ -259,28 +251,24 @@ public class LeaderboardUI extends FxModalWindow {
                         default -> "rank-default";
                     };
 
+            String status =
+                    row[4];
+
             String statusClass =
-                    switch (
-                            row[3]
-                                    .toUpperCase()
-                            ) {
-                        case "ACCEPTED" ->
-                                "chip-success";
-                        case "REJECTED" ->
-                                "chip-danger";
-                        case "UNDER_REVIEW" ->
-                                "chip-warning";
-                        default ->
-                                "chip-info";
+                    switch (status.toUpperCase()) {
+                        case "ACCEPTED" -> "chip-success";
+                        case "REJECTED" -> "chip-danger";
+                        case "UNDER_REVIEW" -> "chip-warning";
+                        default -> "chip-info";
                     };
 
             list.add(
                     new Entry(
                             rank,
-                            row[2],                // developer
-                            row[0],                // submission
-                            row[1],                // challenge
-                            row[3],                // status
+                            row[2], // developer_id
+                            row[0], // submission_id
+                            row[1], // challenge_id
+                            status,
                             statusClass,
                             (int) score,
                             rankClass

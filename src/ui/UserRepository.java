@@ -436,5 +436,29 @@ public class UserRepository {
             return false;
         }
     }
+
+    public boolean deleteUser(String userId) {
+
+        String sql =
+                "DELETE FROM users WHERE user_id = ?";
+
+        try (
+                java.sql.Connection con =
+                        db.DBConnection.getConnection();
+
+                java.sql.PreparedStatement ps =
+                        con.prepareStatement(sql)
+        ) {
+
+            ps.setString(1, userId);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+            return false;
+        }
+    }
 }
 

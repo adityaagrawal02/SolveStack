@@ -514,22 +514,139 @@ public final class FxDashboardUI {
 
     private static ScrollPane buildSettingsView() {
 
-        VBox content =
-                new VBox(18);
+        VBox content = new VBox(20);
+        content.setPadding(new Insets(40));
 
-        content.setPadding(
-                new Insets(32)
+        Label heading = new Label("Settings");
+        heading.getStyleClass().add("page-title");
+
+        Label sub = new Label("Manage your account profile and account actions.");
+        sub.getStyleClass().add("muted");
+
+        models.User currentUser =
+                UserSession.getInstance()
+                        .getCurrentUser();
+
+        TextField usernameField =
+                FxComponents.textField("Username");
+
+        TextField emailField =
+                FxComponents.textField("Email");
+
+        TextArea bioField =
+                FxComponents.textArea("Short bio...");
+
+        if (currentUser != null) {
+
+            usernameField.setText(
+                    currentUser.getUsername()
+            );
+
+            emailField.setText(
+                    currentUser.getEmail()
+            );
+
+            if (currentUser.getProfileBio() != null) {
+                bioField.setText(
+                        currentUser.getProfileBio()
+                );
+            }
+        }
+
+        Button save =
+                FxComponents.primaryBtn(
+                        "Save Changes",
+                        () -> {
+
+                            boolean ok =
+                                    UserRepository
+                                            .getInstance()
+                                            .updateUserProfile(
+                                                    currentUser.getUsername(),
+                                                    usernameField.getText(),
+                                                    emailField.getText(),
+                                                    bioField.getText()
+                                            );
+
+                            if (ok) {
+                                FxComponents.showInfo(
+                                        "Updated",
+                                        "Profile updated successfully."
+                                );
+                            } else {
+                                FxComponents.showError(
+                                        "Failed",
+                                        "Could not update profile."
+                                );
+                            }
+                        }
+                );
+
+        Button delete =
+                FxComponents.outlineBtn(
+                        "Delete Account",
+                        () -> {
+
+                            boolean ok =
+                                    UserRepository
+                                            .getInstance()
+                                            .deleteUser(
+                                                    currentUser.getUserId()
+                                            );
+
+                            if (ok) {
+
+                                FxComponents.showInfo(
+                                        "Deleted",
+                                        "Account removed."
+                                );
+
+                                UserSession
+                                        .getInstance()
+                                        .logout();
+
+                                new LoginUI().setVisible(true);
+
+                            } else {
+
+                                FxComponents.showError(
+                                        "Failed",
+                                        "Could not delete account."
+                                );
+                            }
+                        }
+                );
+
+        VBox form =
+                FxComponents.card(
+                        FxComponents.formLabel("Username"),
+                        usernameField,
+
+                        FxComponents.formLabel("Email"),
+                        emailField,
+
+                        FxComponents.formLabel("Bio"),
+                        bioField,
+
+                        new HBox(10, save, delete)
+                );
+
+        form.getStyleClass().add("form-card");
+        form.setMaxWidth(650);
+
+        content.getChildren().addAll(
+                heading,
+                sub,
+                form
         );
 
-        Label title =
-                new Label("Settings");
+        ScrollPane scroller =
+                new ScrollPane(content);
 
-        title.getStyleClass()
-                .add("page-title");
+        scroller.setFitToWidth(true);
+        scroller.getStyleClass().add("page-scroll");
 
-        content.getChildren().add(title);
-
-        return new ScrollPane(content);
+        return scroller;
     }
 
     /* ===================================================
@@ -604,85 +721,92 @@ public final class FxDashboardUI {
         try {
 
             User user =
-                    UserSession
-                            .getInstance()
+                    UserSession.getInstance()
                             .getCurrentUser();
 
-            switch(role.toLowerCase()) {
+            SubmissionDAO sdao =
+                    new SubmissionDAO();
 
-                case "developer":
+            ChallengeDAO cdao =
+                    new ChallengeDAO();
+
+            switch (role.toLowerCase()) {
+
+                case "developer" -> {
 
                     List<String[]> my =
-                            submissionDAO
-                                    .getSubmissionsByDeveloper(
-                                            user.getUserId()
-                                    );
+                            sdao.getSubmissionsByDeveloper(
+                                    user.getUserId()
+                            );
 
-                    return switch(i) {
+                    long accepted =
+                            my.stream()
+                                    .filter(r ->
+                                            r[3].equalsIgnoreCase("ACCEPTED"))
+                                    .count();
+
+                    return switch (i) {
                         case 0 -> String.valueOf(
-                                challengeDAO
-                                        .getOpenChallengesCount()
+                                cdao.getOpenChallengesCount()
                         );
-                        case 1 -> String.valueOf(my.size());
-                        case 2 -> "0";
+                        case 1 -> String.valueOf(
+                                my.size()
+                        );
+                        case 2 -> String.valueOf(
+                                accepted
+                        );
+                        default -> my.isEmpty()
+                                ? "0%"
+                                : (accepted * 100 / my.size()) + "%";
+                    };
+                }
+
+                case "company" -> {
+
+                    List<String[]> my =
+                            cdao.getChallengesByCompany(
+                                    user.getUserId()
+                            );
+
+                    return switch (i) {
+                        case 0 -> String.valueOf(my.size());
+                        case 1 -> String.valueOf(
+                                sdao.getTotalSubmissions()
+                        );
+                        case 2 -> "--";
                         default -> "--";
                     };
+                }
 
-                case "company":
+                case "evaluator" -> {
 
-                    List<String[]> c =
-                            challengeDAO
-                                    .getChallengesByCompany(
-                                            user.getUserId()
-                                    );
-
-                    return switch(i) {
-                        case 0 -> String.valueOf(c.size());
+                    return switch (i) {
+                        case 0 -> String.valueOf(
+                                sdao.getTotalSubmissions()
+                        );
                         default -> "--";
                     };
+                }
 
-                case "evaluator":
+                default -> {
 
-                    return switch(i) {
-                        case 0 ->
-                                String.valueOf(
-                                        evaluationDAO
-                                                .getPendingSubmissions(
-                                                        user.getUserId()
-                                                ).size()
-                                );
-                        case 1 ->
-                                String.valueOf(
-                                        evaluationDAO
-                                                .getTotalReviewed(
-                                                        user.getUserId()
-                                                )
-                                );
-                        default -> "--";
+                    return switch (i) {
+                        case 0 -> String.valueOf(
+                                getTotalUsers()
+                        );
+                        case 1 -> String.valueOf(
+                                cdao.getTotalChallenges()
+                        );
+                        case 2 -> String.valueOf(
+                                sdao.getTotalSubmissions()
+                        );
+                        default -> "100%";
                     };
-
-                default:
-
-                    return switch(i) {
-                        case 0 ->
-                                String.valueOf(
-                                        getTotalUsers()
-                                );
-                        case 1 ->
-                                String.valueOf(
-                                        challengeDAO
-                                                .getTotalChallenges()
-                                );
-                        case 2 ->
-                                String.valueOf(
-                                        submissionDAO
-                                                .getTotalSubmissions()
-                                );
-                        default -> "99%";
-                    };
+                }
             }
 
-        } catch(Exception e) {
+        } catch (Exception e) {
+
             return "--";
         }
     }
@@ -695,12 +819,60 @@ public final class FxDashboardUI {
             Stage stage,
             String role) {
 
-        return List.of(
-                FxComponents.primaryBtn(
-                        "Open",
-                        () -> {}
-                )
-        );
+        return switch (role.toLowerCase()) {
+
+            case "developer" -> List.of(
+
+                    FxComponents.primaryBtn(
+                            "Browse Challenges",
+                            () -> new ChallengeUI(stage)
+                                    .setVisible(true)
+                    ),
+
+                    FxComponents.outlineBtn(
+                            "My Submissions",
+                            () -> new SubmissionsUI(
+                                    stage,
+                                    "My Work"
+                            ).setVisible(true)
+                    )
+            );
+
+            case "company" -> List.of(
+
+                    FxComponents.primaryBtn(
+                            "Create Challenge",
+                            () -> new CreateChallengeUI(stage)
+                                    .setVisible(true)
+                    ),
+
+                    FxComponents.outlineBtn(
+                            "View Challenges",
+                            () -> new ChallengeUI(stage)
+                                    .setVisible(true)
+                    )
+            );
+
+            case "evaluator" -> List.of(
+
+                    FxComponents.primaryBtn(
+                            "Review Queue",
+                            () -> new SubmissionsUI(
+                                    stage,
+                                    "Pending Reviews"
+                            ).setVisible(true)
+                    )
+            );
+
+            default -> List.of(
+
+                    FxComponents.primaryBtn(
+                            "Leaderboard",
+                            () -> new LeaderboardUI(stage)
+                                    .setVisible(true)
+                    )
+            );
+        };
     }
 
     /* ===================================================
@@ -734,16 +906,42 @@ public final class FxDashboardUI {
         return new Label(text);
     }
 
-    private static List<String> activityItems(
-            String role) {
+    private static List<String> activityItems(String role) {
 
-        return new ArrayList<>(
-                List.of(
-                        "Live database connected",
-                        "System operational",
-                        "Realtime analytics enabled"
-                )
-        );
+        List<String> items =
+                new ArrayList<>();
+
+        try {
+
+            SubmissionDAO dao =
+                    new SubmissionDAO();
+
+            List<String[]> rows =
+                    dao.getAllSubmissions();
+
+            for (int i = 0;
+                 i < rows.size() && i < 3;
+                 i++) {
+
+                String[] r = rows.get(i);
+
+                items.add(
+                        r[2] + " submitted to "
+                                + r[1]
+                                + " | "
+                                + r[4]
+                );
+            }
+
+        } catch (Exception ignored) {
+        }
+
+        if (items.isEmpty()) {
+
+            items.add("No recent activity.");
+        }
+
+        return items;
     }
 
     private static String roleSubtitle(

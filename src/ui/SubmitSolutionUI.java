@@ -63,23 +63,74 @@ public class SubmitSolutionUI extends FxModalWindow {
         HBox uploadRow = new HBox(10, upload, fileName);
         uploadRow.setAlignment(Pos.CENTER_LEFT);
 
-        Button submit = FxComponents.primaryBtn("Submit Solution", () -> {
-            String titleValue = trim(solutionTitle.getText());
-            String descValue = trim(description.getText());
-            if (titleValue.isBlank() || descValue.isBlank()) {
-                FxComponents.showError("Incomplete submission", "Please add a solution title and description.");
-                return;
-            }
+        Button submit =
+                FxComponents.primaryBtn(
+                        "Submit Solution",
+                        () -> {
 
-            models.User currentUser = UserSession.getInstance().getCurrentUser();
-            if (currentUser instanceof models.Developer dev) {
-                dev.submitSolution(challenge, descValue);
-                FxComponents.showInfo("Submitted", "Your solution for " + challenge.getTitle() + " has been submitted.");
-                dispose();
-            } else {
-                FxComponents.showError("Error", "Only developers can submit solutions.");
-            }
-        });
+                            String titleValue =
+                                    trim(solutionTitle.getText());
+
+                            String descValue =
+                                    trim(description.getText());
+
+                            String githubValue =
+                                    trim(github.getText());
+
+                            if (titleValue.isBlank()
+                                    || descValue.isBlank()) {
+
+                                FxComponents.showError(
+                                        "Incomplete submission",
+                                        "Please add title and description."
+                                );
+                                return;
+                            }
+
+                            models.User currentUser =
+                                    UserSession.getInstance()
+                                            .getCurrentUser();
+
+                            if (!(currentUser
+                                    instanceof models.Developer)) {
+
+                                FxComponents.showError(
+                                        "Access Denied",
+                                        "Only developers can submit."
+                                );
+                                return;
+                            }
+
+                            dao.SubmissionDAO dao =
+                                    new dao.SubmissionDAO();
+
+                            boolean ok =
+                                    dao.submitSolution(
+                                            challenge.getChallengeId(),
+                                            currentUser.getUserId(),
+                                            titleValue + " | " + descValue,
+                                            githubValue,
+                                            fileName.getText()
+                                    );
+
+                            if (ok) {
+
+                                FxComponents.showInfo(
+                                        "Success",
+                                        "Solution submitted successfully."
+                                );
+
+                                dispose();
+
+                            } else {
+
+                                FxComponents.showError(
+                                        "Failed",
+                                        "Submission could not be saved."
+                                );
+                            }
+                        }
+                );
 
         Button cancel = FxComponents.ghostBtn("Cancel", this::dispose);
         HBox actions = new HBox(8, submit, cancel);

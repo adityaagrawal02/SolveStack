@@ -38,9 +38,41 @@ public class SubmissionsUI extends FxModalWindow {
         subtitle.getStyleClass().add("muted");
 
         VBox list = new VBox(10);
-        List<models.Submission> subs = ChallengeRepository.getInstance().getAllSubmissions();
-        for (models.Submission row : subs) {
-            list.getChildren().add(submissionCard(row));
+        models.User user =
+                UserSession.getInstance()
+                        .getCurrentUser();
+
+        List<models.Submission> subs;
+
+        if (user instanceof models.Developer) {
+
+            subs = ChallengeRepository
+                    .getInstance()
+                    .getSubmissionsByDeveloper(
+                            user.getUserId()
+                    );
+
+        } else {
+
+            subs = ChallengeRepository
+                    .getInstance()
+                    .getAllSubmissions();
+        }
+
+        if (subs.isEmpty()) {
+
+            Label empty =
+                    new Label("No submissions found.");
+
+            empty.getStyleClass().add("muted");
+
+            list.getChildren().add(empty);
+
+        } else {
+
+            for (models.Submission row : subs) {
+                list.getChildren().add(submissionCard(row));
+            }
         }
 
         content.getChildren().addAll(title, subtitle, list);
